@@ -40,3 +40,4 @@ jobs:
           name: horizon-ios-app
           path: horizon-release.ipa
           if-no-files-found: error
+          
