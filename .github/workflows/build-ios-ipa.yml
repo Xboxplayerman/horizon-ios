@@ -1,0 +1,12 @@
+name: Build iOS IPA
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+      # Additional community custom steps that pull your asset zip from your private repo go here
