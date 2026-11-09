@@ -20,10 +20,10 @@ jobs:
           rustup target add aarch64-apple-ios
           gem install xcpretty
 
-      - name: Build Rust Binary for iOS
+            - name: Build Rust Binary for iOS
         run: |
-          # Compiles the core engine into an iOS-compatible architecture
-          cargo build --release --target aarch64-apple-ios
+          # Disables default desktop window managers and builds exclusively for mobile target architectures
+          cargo build --release --target aarch64-apple-ios --no-default-features --features "client"
 
       - name: Package IPA App Bundle
         run: |
