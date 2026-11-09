@@ -4,9 +4,39 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    name: Compile and Package iOS App
+    runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Rust
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
-      # Additional community custom steps that pull your asset zip from your private repo go here
+        with:
+          targets: aarch64-apple-ios
+
+      - name: Install Cargo-Lipo and Tools
+        run: |
+          rustup target add aarch64-apple-ios
+          gem install xcpretty
+
+      - name: Build Rust Binary for iOS
+        run: |
+          # Compiles the core engine into an iOS-compatible architecture
+          cargo build --release --target aarch64-apple-ios
+
+      - name: Package IPA App Bundle
+        run: |
+          # Creates the payload directory structure iOS requires
+          mkdir -p Payload/Horizon.app
+          cp target/aarch64-apple-ios/release/horizon Payload/Horizon.app/
+          # Prepares a placeholder Info.plist if the project framework doesn't generate one natively
+          echo '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://apple.com"><plist version="1.0"><dict><key>CFBundleExecutable</key><string>horizon</string><key>CFBundleIdentifier</key><string>com.xboxplayerman.horizon</string><key>CFBundleName</key><string>Horizon</string><key>CFBundleVersion</key><string>1.0</string><key>CFBundleShortVersionString</key><string>1.0</string><key>MinimumOSVersion</key><string>15.0</string></dict></plist>' > Payload/Horizon.app/Info.plist
+          zip -r horizon-release.ipa Payload
+
+      - name: Upload Finished IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: horizon-ios-app
+          path: horizon-release.ipa
+          if-no-files-found: error
